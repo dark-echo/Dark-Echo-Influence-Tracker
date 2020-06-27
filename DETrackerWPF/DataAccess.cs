@@ -869,7 +869,7 @@ namespace DETrackerWPF
       lvd.Updated = sd.timestamp;
       lvd.VisitsToday = visitedToday;
       lvd.VisitsTotal = sd.Visted;
-      lvd.FactionsInSystem = sd.FactionHistory[sd.FactionHistory.Count - 1].Factions.Count - 1;
+      lvd.FactionsInSystem = sd.FactionHistory[sd.FactionHistory.Count - 1].Factions.Count;
 
       lvd.SystemAddress = sd.SystemAddress;
       lvd.InfoImage = helper.Convert(DETrackerWPF.Properties.Resources.InfoBlue);
