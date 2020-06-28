@@ -354,6 +354,13 @@
               <Image Source="{Binding Path=WebImage}"></Image>
             </MenuItem.Icon>
           </MenuItem>
+          <MenuItem x:Name="InaraClick"
+                    cal:Message.Attach="InaraClick($view)"
+                    Header="Show on Inara">
+            <MenuItem.Icon>
+              <Image Source="{Binding Path=WebImage}"></Image>
+            </MenuItem.Icon>
+          </MenuItem>
         </ContextMenu>
       </DataGrid.ContextMenu>
 

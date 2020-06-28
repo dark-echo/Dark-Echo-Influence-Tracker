@@ -300,6 +300,14 @@ namespace DETrackerWPF.ViewModels
     /// <summary>
     /// 
     /// </summary>
+    /// <param name="sender"></param>
+    public void InaraClick(object sender)
+    {
+      System.Diagnostics.Process.Start(string.Format("https://inara.cz/galaxy-starsystem/?search={0}", GetSystemName(sender).Replace("+", "%2B").Replace(" ", "%20")));
+    }
+    /// <summary>
+    /// 
+    /// </summary>
     /// <param name="SelectedSystem"></param>
     public void History(DarkEchoSystemsModel SelectedSystem)
     {
