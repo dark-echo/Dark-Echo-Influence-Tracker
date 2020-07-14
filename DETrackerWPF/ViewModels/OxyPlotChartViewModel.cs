@@ -99,6 +99,7 @@ namespace DETrackerWPF.ViewModels
       foreach (var sf in tmpFactionData)
       {
         LineSeries ls = new LineSeries();
+
         ls.Title = sf.FactionName;
 
         if (MaxHistoryDays < sf.DateNAndInf.Count)
@@ -123,15 +124,30 @@ namespace DETrackerWPF.ViewModels
       PlotModel.Series.Clear();
       PlotModel.Axes.Clear();
 
+      double prevDay = 0.0;
+
       LineSeries ls = new LineSeries();
+      ls.Color = OxyColors.Blue;
+
+      LinearBarSeries l1 = new LinearBarSeries();
+      l1.NegativeFillColor = OxyColors.Red;
+      l1.FillColor = OxyColors.Green;
+
       PlotModel.Title = string.Format("Average Influence Across all Dark Echo Systems for the past {0} days", theResults.Count);
 
       foreach (var results in theResults)
       {
+        if (prevDay == 0.0)
+          prevDay = results.TotalInf;
+
+        l1.Points.Add(new DataPoint(DateTimeAxis.ToDouble(results.InfDate), (results.TotalInf - prevDay) * 10));
+
         ls.Points.Add(new DataPoint(DateTimeAxis.ToDouble(results.InfDate), results.TotalInf));
+        prevDay = results.TotalInf;
       }
 
       PlotModel.Series.Add(ls);
+      PlotModel.Series.Add(l1);
       AddAxis("Inf");
       PlotModel.InvalidatePlot(true);
     }

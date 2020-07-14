@@ -276,6 +276,9 @@ namespace DETrackerWPF.ViewModels
     /// <param name="sender"></param>
     public void EDDBClick(object sender)
     {
+
+      // Can possibly make this simpler https://eddb.io/system/ed-address/<System Address>
+
       System.Diagnostics.Process.Start($"https://eddb.io/system/{dataAccess.GetSystemEDDBID(GetSystemName(sender))}");
     }
     /// <summary>
