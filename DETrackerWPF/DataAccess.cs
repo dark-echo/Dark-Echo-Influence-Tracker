@@ -1150,6 +1150,7 @@ namespace DETrackerWPF
       LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true);
 
       connectionString = RemoteConnectionString;
+      //connectionString = LocalConnectionString;
 
       // Start the dependency process
       SqlDependency.Start(connectionString);

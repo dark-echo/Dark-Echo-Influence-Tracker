@@ -80,7 +80,7 @@ namespace DETrackerWPF.ViewModels
       WindowTitle = string.Format("Dark Echo Influence Tracker v{0} (Built {1})", version, DETrackerWPF.Properties.Resources.BuildDate);
 
       // Get DE systems, size main screen to suit
-      displayDESystems = dataAccess.ReadDeSystemsTable();
+       displayDESystems = dataAccess.ReadDeSystemsTable();
 
       // sort out the screen size
       double screenWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
@@ -104,6 +104,12 @@ namespace DETrackerWPF.ViewModels
       var systemsControlled = 0;
       foreach (var des in displayDESystems)
       {
+        //if (des.SysFaction == null && des.StarSystem == "BD+19 2511")
+        //{
+        //  des.SysFaction = new SystemFaction();
+        //  des.SysFaction.Name = string.Empty;
+        //}
+
         if (des.SysFaction == null)
         {
           System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show(string.Format("Error with systems data for : {0}\nPlease Visit system to Update\nDETracker will now Close", des.StarSystem),

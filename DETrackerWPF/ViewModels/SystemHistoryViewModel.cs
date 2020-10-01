@@ -46,6 +46,12 @@ namespace DETrackerWPF.ViewModels
       ActiveStarSystem = selectedSystem.StarSystem;
       DisplayHistoryData(selectedSystem, "");
 
+      //if (selectedSystem.SysFaction == null)
+      //{
+      //  selectedSystem.SysFaction = new SystemFaction();
+      //  selectedSystem.SysFaction.Name = string.Empty;
+      //}
+
       HeaderSummary = string.Format("Star System: {0} | Population: {1:###,###,###,###} | Controlling Faction: {2} | Government: {3}\r\nAlligence: {4} | Economies: {5} | Security: {6}",
         selectedSystem.StarSystem,
         selectedSystem.Population,
