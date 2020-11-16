@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using DETrackerWPF.ViewModels;
 using Newtonsoft.Json;
 using System.Configuration;
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Windows;
@@ -260,7 +261,6 @@ namespace DETrackerWPF
       }
 
     }
-
     /// <summary>
     /// Read in all systems where DE is present and store in list
     /// </summary>
@@ -287,10 +287,8 @@ namespace DETrackerWPF
 
         sqlConnection.Close();
       }
-
       return changedSystem;
     }
-
     /// <summary>
     /// 
     /// </summary>
@@ -305,7 +303,6 @@ namespace DETrackerWPF
       };
       return cd;
     }
-
     /// <summary>
     /// 
     /// </summary>
@@ -589,50 +586,50 @@ namespace DETrackerWPF
 
       return s;
     }
-
     /// <summary>
     /// 
     /// </summary>
-    public async Task<string> GetClosePlayerFactions(SystemOverviewModel _systemOverview, List<ClosePlayFactions> _closestPlayerFactions, List<ExpansionSystems> _expansionSystems, int Range)
+    public async Task<string> GetClosePlayerFactions(SystemOverviewModel _systemOverview,
+        List<ClosePlayFactions> _closestPlayerFactions, List<ExpansionSystems> _expansionSystems, int Range)
     {
-      _closestPlayerFactions.Clear();
-      _expansionSystems.Clear();
-      ExpansionRange = Range;
+        _closestPlayerFactions.Clear();
+        _expansionSystems.Clear();
+        ExpansionRange = Range;
 
-      using (SqlConnection sqlConnection = new SqlConnection(connectionString))
-      {
-        using (SqlCommand SqlCmd = new SqlCommand("GetPlayerFactions", sqlConnection))
+        using (SqlConnection sqlConnection = new SqlConnection(connectionString))
         {
-          SqlCmd.CommandType = CommandType.StoredProcedure;
-
-          await sqlConnection.OpenAsync();
-          using (SqlDataReader reader = await SqlCmd.ExecuteReaderAsync())
-          {
-            while (reader.Read())
+            using (SqlCommand SqlCmd = new SqlCommand("GetPlayerFactions", sqlConnection))
             {
-              var pf = MapClosePlayFactions(reader);
-              if (pf.SystemName == Helper.FactionName)
-                continue;
+                SqlCmd.CommandType = CommandType.StoredProcedure;
 
-              var distance = getDistance.Distance3D(_systemOverview.StarPos[0], _systemOverview.StarPos[1], _systemOverview.StarPos[2], pf.StarPos[0], pf.StarPos[1], pf.StarPos[2]);
-              if (distance < 30)
-              {
-                pf.Distance = distance;
-                _closestPlayerFactions.Add(pf);
-              }
+                await sqlConnection.OpenAsync();
+                using (SqlDataReader reader = await SqlCmd.ExecuteReaderAsync())
+                {
+                    while (reader.Read())
+                    {
+                        var pf = MapClosePlayFactions(reader);
+                        if (pf.SystemName == Helper.FactionName)
+                            continue;
+
+                        var distance = getDistance.Distance3D(_systemOverview.StarPos[0], _systemOverview.StarPos[1],
+                            _systemOverview.StarPos[2], pf.StarPos[0], pf.StarPos[1], pf.StarPos[2]);
+                        if (distance < 30)
+                        {
+                            pf.Distance = distance;
+                            _closestPlayerFactions.Add(pf);
+                        }
+                    }
+
+                    reader.Close();
+                }
+
+                sqlConnection.Close();
             }
-
-            reader.Close();
-          }
-
-          sqlConnection.Close();
         }
-      }
 
-      GetExpansionTargets(_systemOverview, _closestPlayerFactions, _expansionSystems);
-      return "Complete";
+        GetExpansionTargets(_systemOverview, _closestPlayerFactions, _expansionSystems);
+        return "Complete";
     }
-
     /// <summary>
     /// 
     /// </summary>
@@ -651,54 +648,63 @@ namespace DETrackerWPF
 
       return cpf;
     }
-
-    void GetExpansionTargets(SystemOverviewModel _systemOverview, List<ClosePlayFactions> _closestPlayerFactions, List<ExpansionSystems> _expansionSystems)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="_systemOverview"></param>
+    /// <param name="_closestPlayerFactions"></param>
+    /// <param name="_expansionSystems"></param>
+    void GetExpansionTargets(SystemOverviewModel _systemOverview, List<ClosePlayFactions> _closestPlayerFactions,
+        List<ExpansionSystems> _expansionSystems)
     {
-      List<ExpansionSystems> _allExpansionTargets = new List<ExpansionSystems>();
+        List<ExpansionSystems> _allExpansionTargets = new List<ExpansionSystems>();
 
-      using (SqlConnection sqlConnection = new SqlConnection(connectionString))
-      {
-        using (SqlCommand SqlCmd = new SqlCommand("GetPopulatedSystems", sqlConnection))
+        using (SqlConnection sqlConnection = new SqlConnection(connectionString))
         {
-          SqlCmd.CommandType = CommandType.StoredProcedure;
-
-          sqlConnection.Open();
-          using (SqlDataReader reader = SqlCmd.ExecuteReader())
-          {
-            while (reader.Read())
+            using (SqlCommand SqlCmd = new SqlCommand("GetPopulatedSystems", sqlConnection))
             {
-              var exp = MapExpansionSystems(reader);
-              if (getDistance.Within3DManhattanDistance(_systemOverview.StarPos[0], _systemOverview.StarPos[1], _systemOverview.StarPos[2], exp.x, exp.y, exp.z, ExpansionRange))
-              {
-                exp.Distance = getDistance.Distance3D(_systemOverview.StarPos[0], _systemOverview.StarPos[1], _systemOverview.StarPos[2], exp.x, exp.y, exp.z);
-                _allExpansionTargets.Add(exp);
-              }
+                SqlCmd.CommandType = CommandType.StoredProcedure;
+
+                sqlConnection.Open();
+                using (SqlDataReader reader = SqlCmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        var exp = MapExpansionSystems(reader);
+                        if (getDistance.Within3DManhattanDistance(_systemOverview.StarPos[0],
+                            _systemOverview.StarPos[1], _systemOverview.StarPos[2], exp.x, exp.y, exp.z,
+                            ExpansionRange))
+                        {
+                            exp.Distance = getDistance.Distance3D(_systemOverview.StarPos[0],
+                                _systemOverview.StarPos[1], _systemOverview.StarPos[2], exp.x, exp.y, exp.z);
+                            _allExpansionTargets.Add(exp);
+                        }
+                    }
+
+                    reader.Close();
+                }
+
+                sqlConnection.Close();
             }
-
-            reader.Close();
-          }
-
-          sqlConnection.Close();
         }
-      }
 
-      foreach (var exp in _allExpansionTargets)
-      {
-        List<FactionsPresent> ffd = GetSystemsFactions(exp.EddbID);
+        foreach (var exp in _allExpansionTargets)
+        {
+            List<FactionsPresent> ffd = GetSystemsFactions(exp.EddbID);
 
-        // If we are already here then skip
-        if (ffd.Exists(x => x.minor_faction_id == Helper.FactionEDDBID))
-          continue;
+            // If we are already here then skip
+            if (ffd.Exists(x => x.minor_faction_id == Helper.FactionEDDBID))
+                continue;
 
-        exp.InvasionTarget = false;
+            exp.InvasionTarget = false;
 
-        if ((ffd.Count) > 6)
-          exp.InvasionTarget = true;
+            if ((ffd.Count) > 6)
+                exp.InvasionTarget = true;
 
-        // Valid expansion target
-        exp.FactionsInSystem = (ffd.Count);
-        _expansionSystems.Add(exp);
-      }
+            // Valid expansion target
+            exp.FactionsInSystem = (ffd.Count);
+            _expansionSystems.Add(exp);
+        }
     }
 
     /// <summary>
@@ -1063,51 +1069,51 @@ namespace DETrackerWPF
     /// <returns></returns>
     private DESystemsForDisplay MapDESystemsForDisplay(SqlDataReader reader)
     {
-      #region Debug Code
+            #region Debug Code
 
-      //DESystemsForDisplay detest = new DESystemsForDisplay();
+            //DESystemsForDisplay DESystem = new DESystemsForDisplay();
+            //
+            //DESystem.StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
+            //DESystem.SystemAddress = reader.GetInt64(1);
+            //DESystem.FactionHistory = (List<DESystemsHistory>)JsonConvert.DeserializeObject(reader.GetString(2), typeof(List<DESystemsHistory>));
+            //DESystem.StarPos = (List<double>)JsonConvert.DeserializeObject(reader.GetString(3), typeof(List<double>));
+            //DESystem.Visted = reader.GetInt32(4);
+            //DESystem.timestamp = reader.GetDateTime(5);
+            //DESystem.Population = reader.GetInt64(8);
+            //DESystem.SystemAllegiance = reader.IsDBNull(9) ? string.Empty : reader.GetString(9);
+            //DESystem.SystemEconomy = reader.IsDBNull(10) ? string.Empty : reader.GetString(10);
+            //DESystem.SystemGovernment = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
+            //DESystem.SystemSecondEconomy = reader.IsDBNull(12) ? string.Empty : reader.GetString(12);
+            //DESystem.SystemSecurity = reader.IsDBNull(13) ? string.Empty : reader.GetString(13);
+            //DESystem.Updated = false;
+            //
+            //splashMessage = "Retrieving Systems: " + DESystem.StarSystem;
 
-      //detest.StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0);
-      //detest.SystemAddress = reader.GetInt64(1);
-      //detest.FactionHistory = (List<DESystemsHistory>) JsonConvert.DeserializeObject(reader.GetString(2), typeof(List<DESystemsHistory>));
-      //detest.StarPos = (List<double>) JsonConvert.DeserializeObject(reader.GetString(3), typeof(List<double>));
-      //detest.Visted = reader.GetInt32(4);
-      //detest.timestamp = reader.GetDateTime(5);
-      //detest.Population = reader.GetInt64(8);
-      //detest.SystemAllegiance = reader.IsDBNull(9) ? string.Empty : reader.GetString(9);
-      //detest.SystemEconomy = reader.IsDBNull(10) ? string.Empty : reader.GetString(10);
-      //detest.SystemGovernment = reader.IsDBNull(11) ? string.Empty : reader.GetString(11);
-      //detest.SystemSecondEconomy = reader.IsDBNull(12) ? string.Empty : reader.GetString(12);
-      //detest.SystemSecurity = reader.IsDBNull(13) ? string.Empty : reader.GetString(13);
-      //detest.Updated = false;
-      //return detest;
+            #endregion
 
-      #endregion
+            DESystemsForDisplay DESystem = new DESystemsForDisplay
+        {
+            StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+            SystemAddress = reader.GetInt64(1),
+            FactionHistory =
+                (List<DESystemsHistory>) JsonConvert.DeserializeObject(reader.GetString(2),
+                    typeof(List<DESystemsHistory>)),
+            StarPos = (List<double>) JsonConvert.DeserializeObject(reader.GetString(3), typeof(List<double>)),
+            Visted = reader.GetInt32(4),
+            timestamp = reader.GetDateTime(5),
+            Population = reader.GetInt64(8),
+            SystemAllegiance = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+            SystemEconomy = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+            SystemGovernment = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+            SystemSecondEconomy = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+            SystemSecurity = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
+            Updated = false
+        };
 
-      DESystemsForDisplay DESystem = new DESystemsForDisplay
-      {
-        StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
-        SystemAddress = reader.GetInt64(1),
-        FactionHistory = (List<DESystemsHistory>)JsonConvert.DeserializeObject(reader.GetString(2), typeof(List<DESystemsHistory>)),
-        StarPos = (List<double>)JsonConvert.DeserializeObject(reader.GetString(3), typeof(List<double>)),
-        Visted = reader.GetInt32(4),
-        timestamp = reader.GetDateTime(5),
-        Population = reader.GetInt64(8),
-        SystemAllegiance = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-        SystemEconomy = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
-        SystemGovernment = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
-        SystemSecondEconomy = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
-        SystemSecurity = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
-        Updated = false
-      };
+        if (!reader.IsDBNull(7))
+            DESystem.SysFaction = JsonConvert.DeserializeObject<SystemFaction>(reader.GetString(7));
 
-      if (!reader.IsDBNull(7))
-        DESystem.SysFaction = JsonConvert.DeserializeObject<SystemFaction>(reader.GetString(7));
-
-      //splashMessage = "Retrieving Systems: " + DESystem.StarSystem;
-      return DESystem;
-
-
+        return DESystem;
     }
 
     /// <summary>
