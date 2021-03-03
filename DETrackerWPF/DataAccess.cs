@@ -4,18 +4,10 @@ using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.SqlClient;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
-using DETrackerWPF.ViewModels;
 using Newtonsoft.Json;
 using System.Configuration;
-using System.Diagnostics;
-using System.Security.Cryptography;
-using System.Threading;
-using System.Windows;
 using Caliburn.Micro;
 using DETrackerWPF.Models;
 
@@ -45,40 +37,50 @@ namespace DETrackerWPF
     /// </summary>
     public void CalculateAvfValuesPreTick()
     {
-      double dayMinus1Inf = 0.0;
-      double dayMinus2Inf = 0.0;
-
-      // Tick Not Happened so we just display data for the previous tick.
-      foreach (var sd in displayDESystems)
-      {
-        // Have we got any history records, catch for when moved into new System
-        if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+        double dayMinus1Inf = 0.0;
+        double dayMinus2Inf = 0.0;
+  
+        // Tick Not Happened so we just display data for the previous tick.
+        foreach (var sd in displayDESystems)
         {
-          DESystemsHistory histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
-          dayMinus1Inf = dayMinus1Inf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
+            // Have we got any history records, catch for when moved into new System
+            if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+            {
+                DESystemsHistory histRec =
+                    sd.FactionHistory[
+                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                dayMinus1Inf = dayMinus1Inf +
+                               (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                   .Influence * 100);
 
-          // Have we 2 days history?
-          if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date) >= 0)
-          {
-            histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date)];
-            dayMinus2Inf = dayMinus2Inf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-          }
+                // Have we 2 days history?
+                if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date) >= 0)
+                {
+                    histRec = sd.FactionHistory[
+                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date)];
+                    dayMinus2Inf = dayMinus2Inf +
+                                   (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                       .Influence * 100);
+                }
+            }
+            else
+            {
+                DESystemsHistory histRec =
+                    sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+                dayMinus1Inf = dayMinus1Inf +
+                               (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                   .Influence * 100);
+            }
         }
-        else
-        {
-          DESystemsHistory histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
-          dayMinus1Inf = dayMinus1Inf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-        }
-      }
 
-      // Calculate Average and Influence change for today
-      var avgInfForDayMinus1 = dayMinus1Inf / displayDESystems.Count;
-      var infChange = dayMinus1Inf - dayMinus2Inf;
+        // Calculate Average and Influence change for today
+        var avgInfForDayMinus1 = dayMinus1Inf / displayDESystems.Count;
+        var infChange = dayMinus1Inf - dayMinus2Inf;
 
-      // Set the properties 
-      TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}%", avgInfForDayMinus1);
-      FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}%", infChange);
-      FactionInfluenceChangeValue = infChange;
+        // Set the properties 
+        TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}%", avgInfForDayMinus1);
+        FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}%", infChange);
+        FactionInfluenceChangeValue = infChange;
     }
 
     /// <summary>
@@ -86,64 +88,155 @@ namespace DETrackerWPF
     /// </summary>
     public void CalculateAverageChange()
     {
-      double dayMinus1Inf = 0.0;
-      double todaysTotalInf = 0.0;
-
-      // Are we past tick time?
-      if (DateTime.Compare(DateTime.UtcNow, TickTime) > 0)
-      {
-        // Tick has happened
-        foreach (var sd in displayDESystems)
+        double dayMinus1Inf = 0.0;
+        double todaysTotalInf = 0.0;
+        int deSysCount = 0;
+        // Are we past tick time?
+        if (DateTime.Compare(DateTime.UtcNow, TickTime) > 0)
         {
-          //do we have as record for today
-          if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date) >= 0)
-          {
-            //seems to, lets grab it
-            DESystemsHistory histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+            // Tick has happened - Calculate for system we control.
+            foreach (var sd in displayDESystems)
+            {
+                if (sd.SysFaction.Name != Helper.FactionName)
+                    continue;
 
-            // is the update time after the tick time
-            if (DateTime.Compare(histRec.timestamp, TickTime) > 0)
-            {
-              // Yes, add to inf total for today
-              todaysTotalInf = todaysTotalInf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-            }
-            else
-            {
-              // No, use previous days value
-              if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
-              {
-                histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
-                todaysTotalInf = todaysTotalInf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-              }
-            }
-          }
-          else
-          {
-            // No record for today so use yesterdays value
-            if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
-            {
-              DESystemsHistory histRec = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
-              todaysTotalInf = todaysTotalInf + (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-            }
-          }
+                deSysCount++;
 
-          // Get yesterdays avg inf
-          if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
-          {
-            DESystemsHistory histRecMinus1 = sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
-            dayMinus1Inf = dayMinus1Inf + (histRecMinus1.Factions[histRecMinus1.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100);
-          }
+                //do we have as record for today
+                if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date) >= 0)
+                {
+                    //seems to, lets grab it
+                    DESystemsHistory histRec =
+                        sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+
+                    // is the update time after the tick time
+                    if (DateTime.Compare(histRec.timestamp, TickTime) > 0)
+                    {
+                        // Yes, add to inf total for today
+                        todaysTotalInf = todaysTotalInf +
+                                         (histRec.Factions[
+                                              histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence *
+                                          100);
+                    }
+                    else
+                    {
+                        // No, use previous days value
+                        if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                        {
+                            histRec = sd.FactionHistory[
+                                sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                            todaysTotalInf = todaysTotalInf +
+                                             (histRec.Factions[
+                                                     histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                                 .Influence * 100);
+                        }
+                    }
+                }
+                else
+                {
+                    // No record for today so use yesterdays value
+                    if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                    {
+                        DESystemsHistory histRec = sd.FactionHistory[
+                            sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                        todaysTotalInf = todaysTotalInf +
+                                         (histRec.Factions[
+                                              histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence *
+                                          100);
+                    }
+                }
+
+                // Get yesterdays avg inf
+                if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                {
+                    DESystemsHistory histRecMinus1 = sd.FactionHistory[
+                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                    dayMinus1Inf = dayMinus1Inf +
+                                   (histRecMinus1
+                                       .Factions[histRecMinus1.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                       .Influence * 100);
+                }
+            }
+
+            // Calculate the values
+            //var avgInfForToday = todaysTotalInf / displayDESystems.Count;
+            var avgInfForToday = todaysTotalInf / deSysCount;
+            var infChange = todaysTotalInf - dayMinus1Inf;
+
+
+            // Now calculate for systems we control and systems are also present in.
+            dayMinus1Inf = 0.0;
+            todaysTotalInf = 0.0;
+            deSysCount = 0;
+
+            foreach (var sd in displayDESystems)
+            {
+                //do we have as record for today
+                    if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date) >= 0)
+                {
+                    //seems to, lets grab it
+                    DESystemsHistory histRec =
+                        sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+
+                    // is the update time after the tick time
+                    if (DateTime.Compare(histRec.timestamp, TickTime) > 0)
+                    {
+                        // Yes, add to inf total for today
+                        todaysTotalInf = todaysTotalInf +
+                                         (histRec.Factions[
+                                              histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence *
+                                          100);
+                    }
+                    else
+                    {
+                        // No, use previous days value
+                        if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                        {
+                            histRec = sd.FactionHistory[
+                                sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                            todaysTotalInf = todaysTotalInf +
+                                             (histRec.Factions[
+                                                     histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                                 .Influence * 100);
+                        }
+                    }
+                }
+                else
+                {
+                    // No record for today so use yesterdays value
+                    if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                    {
+                        DESystemsHistory histRec = sd.FactionHistory[
+                            sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                        todaysTotalInf = todaysTotalInf +
+                                         (histRec.Factions[
+                                              histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence *
+                                          100);
+                    }
+                }
+
+                // Get yesterdays avg inf
+                if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+                {
+                    DESystemsHistory histRecMinus1 = sd.FactionHistory[
+                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+                    dayMinus1Inf = dayMinus1Inf +
+                                   (histRecMinus1
+                                       .Factions[histRecMinus1.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                                       .Influence * 100);
+                }
+            }
+
+            // Calculate the values
+            var avgInfForTodayAll = todaysTotalInf / displayDESystems.Count;
+            var infChangeAll = todaysTotalInf - dayMinus1Inf;
+
+
+            // Display the data
+            TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}% / {1:0.##}%", avgInfForToday, avgInfForTodayAll);
+            FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}% / {1:0.##}%", infChange, infChangeAll);
+            FactionInfluenceChangeValue = infChange;
         }
-
-        // Calculate the values
-        var avgInfForToday = todaysTotalInf / displayDESystems.Count;
-        var infChange = todaysTotalInf - dayMinus1Inf;
-        // Display the data
-
-        TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}%", avgInfForToday);
-        FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}%", infChange);
-        FactionInfluenceChangeValue = infChange;
-      }
     }
 
     /// <summary>

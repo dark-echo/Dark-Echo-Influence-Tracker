@@ -77,10 +77,11 @@ namespace DETrackerWPF.ViewModels
       System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
       FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
       string version = fvi.FileVersion;
-      WindowTitle = string.Format("Dark Echo Influence Tracker v{0} (Built {1})", version, DETrackerWPF.Properties.Resources.BuildDate);
+      WindowTitle = string.Format("Dark Echo Influence Tracker v{0} (Built {1})", version, 
+      DETrackerWPF.Properties.Resources.BuildDate);
 
       // Get DE systems, size main screen to suit
-       displayDESystems = dataAccess.ReadDeSystemsTable();
+      displayDESystems = dataAccess.ReadDeSystemsTable();
 
       // sort out the screen size
       double screenWidth = System.Windows.SystemParameters.PrimaryScreenWidth;
@@ -96,29 +97,23 @@ namespace DETrackerWPF.ViewModels
 
       // Frig to stop scroll bars appearing when a systems updates and sorting on update time
       Height = Height + 45;
-
       MaxHeight = Height;
 
       // Build the summary line
-
       var systemsControlled = 0;
       foreach (var des in displayDESystems)
       {
-        //if (des.SysFaction == null && des.StarSystem == "BD+19 2511")
-        //{
-        //  des.SysFaction = new SystemFaction();
-        //  des.SysFaction.Name = string.Empty;
-        //}
-
         if (des.SysFaction == null)
         {
-          System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show(string.Format("Error with systems data for : {0}\nPlease Visit system to Update\nDETracker will now Close", des.StarSystem),
+          System.Windows.MessageBoxResult result = System.Windows.MessageBox.Show(
+            string.Format("Error with systems data for : {0}\nPlease Visit system to Update\nDETracker will now Close",
+              des.StarSystem),
             "System Data Error",
             MessageBoxButton.OK,
             MessageBoxImage.Error,
             MessageBoxResult.OK,
             MessageBoxOptions.DefaultDesktopOnly);
-          
+
         }
 
         if (des.SysFaction.Name == Helper.FactionName)
@@ -127,7 +122,9 @@ namespace DETrackerWPF.ViewModels
 
       //var systemsControlled = displayDESystems.Count(x => x.SysFaction.Name == Helper.FactionName);
       var popControlled = displayDESystems.Where(x => x.SysFaction.Name == Helper.FactionName).Sum(x => x.Population);
-      FactionSummary = string.Format("Population Controlled : {0:###,###,###} / Systems Controlled {1} / Present in {2} Systems", popControlled, systemsControlled, displayDESystems.Count);
+      FactionSummary =
+        string.Format("Population Controlled : {0:###,###,###} / Systems Controlled {1} / Present in {2} Systems",
+          popControlled, systemsControlled, displayDESystems.Count);
 
       GetListViewData();
       CalculateSystemMovements();
@@ -178,7 +175,8 @@ namespace DETrackerWPF.ViewModels
 
         foreach (var deSystem in UpdatedDisplayDESystems)
         {
-          var index = DarkEchoSystems.IndexOf(DarkEchoSystems.First(x => x.StarSystemName == deSystem.StarSystem));
+          var index = DarkEchoSystems.IndexOf(DarkEchoSystems.First(x =>
+            x.StarSystemName == deSystem.StarSystem));
 
           DarkEchoSystems[index] = dataAccess.BuildDisplayLine(deSystem);
           DarkEchoSystems[index].HighLight = true;
@@ -187,7 +185,8 @@ namespace DETrackerWPF.ViewModels
 
         foreach (var deSystem in UpdatedDisplayDESystems)
         {
-          dataAccess.displayDESystems[dataAccess.displayDESystems.FindIndex(x => x.StarSystem == deSystem.StarSystem)].Updated = false;
+          dataAccess.displayDESystems[
+            dataAccess.displayDESystems.FindIndex(x => x.StarSystem == deSystem.StarSystem)].Updated = false;
         }
 
         dataAccess.SystemUpdated = false;
@@ -252,7 +251,10 @@ namespace DETrackerWPF.ViewModels
     /// <param name="SelectedSystem"></param>
     public void RowSelect(DarkEchoSystemsModel SelectedSystem)
     {
-      Int64 SystemAddress = displayDESystems[displayDESystems.IndexOf(displayDESystems.Find(x => x.StarSystem == SelectedSystem.StarSystemName))].SystemAddress;
+      Int64 SystemAddress =
+        displayDESystems[
+            displayDESystems.IndexOf(displayDESystems.Find(x => x.StarSystem == SelectedSystem.StarSystemName))]
+          .SystemAddress;
       _windowManager.ShowWindow(new SystemHistoryViewModel(SystemAddress, displayDESystems), null, null);
 
     }
@@ -276,6 +278,7 @@ namespace DETrackerWPF.ViewModels
       WindowManager windowManager = new WindowManager();
       windowManager.ShowWindow(new SystemHistoryViewModel(GetSystemAddress(sender), displayDESystems), null, null);
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -287,13 +290,15 @@ namespace DETrackerWPF.ViewModels
 
       System.Diagnostics.Process.Start($"https://eddb.io/system/{dataAccess.GetSystemEDDBID(GetSystemName(sender))}");
     }
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="sender"></param>
     public void EliteBGSClick(object sender)
     {
-      WebRequest webRequest = WebRequest.Create(string.Format("https://elitebgs.app/api/ebgs/v4/systems?name={0}", GetSystemName(sender).Replace("+", "%2B")));
+      WebRequest webRequest = WebRequest.Create(string.Format("https://elitebgs.app/api/ebgs/v4/systems?name={0}",
+        GetSystemName(sender).Replace("+", "%2B")));
       WebResponse webResp = webRequest.GetResponse();
 
       Stream dataStream = webResp.GetResponseStream();
@@ -306,14 +311,17 @@ namespace DETrackerWPF.ViewModels
       string sysAddr = retDocs[0]._id.ToString();
       System.Diagnostics.Process.Start(string.Format("https://elitebgs.app/system/{0}", sysAddr));
     }
+
     /// <summary>
     /// 
     /// </summary>
     /// <param name="sender"></param>
     public void InaraClick(object sender)
     {
-      System.Diagnostics.Process.Start(string.Format("https://inara.cz/galaxy-starsystem/?search={0}", GetSystemName(sender).Replace("+", "%2B").Replace(" ", "%20")));
+      System.Diagnostics.Process.Start(string.Format("https://inara.cz/galaxy-starsystem/?search={0}",
+        GetSystemName(sender).Replace("+", "%2B").Replace(" ", "%20")));
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -322,6 +330,7 @@ namespace DETrackerWPF.ViewModels
     {
       RowSelect(SelectedSystem);
     }
+
     /// <summary>
     /// 
     /// </summary>
@@ -331,11 +340,13 @@ namespace DETrackerWPF.ViewModels
       WindowManager windowManager = new WindowManager();
       windowManager.ShowWindow(new SystemDetailViewModel(displayDESystems, SelectedSystem.StarSystemName), null, null);
     }
+
     public void CheckChanged(object CheckedState)
     {
       bool cs = (bool) CheckedState;
       DisplayFullHistory = cs;
     }
+
     /// <summary>
     /// 
     /// </summary>
