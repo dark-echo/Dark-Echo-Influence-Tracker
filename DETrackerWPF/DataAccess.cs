@@ -39,12 +39,17 @@ namespace DETrackerWPF
     {
         double dayMinus1Inf = 0.0;
         double dayMinus2Inf = 0.0;
-  
-        // Tick Not Happened so we just display data for the previous tick.
-        foreach (var sd in displayDESystems)
+        int deSysCount = 0;
+
+      // Tick Not Happened so we just display data for the previous tick.
+      foreach (var sd in displayDESystems)
         {
-            // Have we got any history records, catch for when moved into new System
-            if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+          if (sd.SysFaction.Name != Helper.FactionName)
+            continue;
+
+          deSysCount++;
+          // Have we got any history records, catch for when moved into new System
+        if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
             {
                 DESystemsHistory histRec =
                     sd.FactionHistory[
@@ -74,13 +79,56 @@ namespace DETrackerWPF
         }
 
         // Calculate Average and Influence change for today
-        var avgInfForDayMinus1 = dayMinus1Inf / displayDESystems.Count;
+        //var avgInfForDayMinus1 = dayMinus1Inf / displayDESystems.Count;
+        var avgInfForDayMinus1 = dayMinus1Inf / deSysCount;
         var infChange = dayMinus1Inf - dayMinus2Inf;
 
-        // Set the properties 
-        TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}%", avgInfForDayMinus1);
-        FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}%", infChange);
-        FactionInfluenceChangeValue = infChange;
+
+        dayMinus1Inf = 0.0;
+        dayMinus2Inf = 0.0;
+        deSysCount = 0;
+
+      // Tick Not Happened so we just display data for the previous tick.
+      foreach (var sd in displayDESystems)
+      {
+        // Have we got any history records, catch for when moved into new System
+        if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
+        {
+          DESystemsHistory histRec =
+              sd.FactionHistory[
+                  sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+          dayMinus1Inf = dayMinus1Inf +
+                         (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                             .Influence * 100);
+
+          // Have we 2 days history?
+          if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date) >= 0)
+          {
+            histRec = sd.FactionHistory[
+                sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date)];
+            dayMinus2Inf = dayMinus2Inf +
+                           (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                               .Influence * 100);
+          }
+        }
+        else
+        {
+          DESystemsHistory histRec =
+              sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+          dayMinus1Inf = dayMinus1Inf +
+                         (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                             .Influence * 100);
+        }
+      }
+
+      // Calculate Average and Influence change for today
+      var avgInfForDayMinus1All = dayMinus1Inf / displayDESystems.Count;
+      var infChangeAll = dayMinus1Inf - dayMinus2Inf;
+
+      // Set the properties 
+      TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}% / {1:0.##}%", avgInfForDayMinus1, avgInfForDayMinus1All);
+      FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}% / {1:0.##}%", infChange, infChangeAll);
+      FactionInfluenceChangeValue = infChangeAll;
     }
 
     /// <summary>
@@ -91,6 +139,7 @@ namespace DETrackerWPF
         double dayMinus1Inf = 0.0;
         double todaysTotalInf = 0.0;
         int deSysCount = 0;
+
         // Are we past tick time?
         if (DateTime.Compare(DateTime.UtcNow, TickTime) > 0)
         {
@@ -235,7 +284,7 @@ namespace DETrackerWPF
             // Display the data
             TotalFactionInfluence = string.Format("Average Faction Influence : {0:0.##}% / {1:0.##}%", avgInfForToday, avgInfForTodayAll);
             FactionInfluenceChange = string.Format("Total Influence Change : {0:0.##}% / {1:0.##}%", infChange, infChangeAll);
-            FactionInfluenceChangeValue = infChange;
+            FactionInfluenceChangeValue = infChangeAll;
         }
     }
 
