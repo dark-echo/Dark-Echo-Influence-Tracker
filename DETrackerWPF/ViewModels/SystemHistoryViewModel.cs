@@ -60,12 +60,15 @@ namespace DETrackerWPF.ViewModels
 
       // var FactionsInSystem = selectedSystem.FactionHistory[selectedSystem.FactionHistory.Count - 1].Factions.Count;
 
+
       Factions.Clear();
       foreach (FullFactionData Faction in selectedSystem.FactionHistory[selectedSystem.FactionHistory.Count - 1].Factions)
       {
         // Dump Pilots' Federation Local Branch
         if (Faction.Name.Contains("Federation Local Branch"))
           continue;
+
+        
 
         FactionModel f = new FactionModel();
         f.FactionName = Faction.Name;

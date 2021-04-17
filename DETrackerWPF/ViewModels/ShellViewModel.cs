@@ -297,7 +297,7 @@ namespace DETrackerWPF.ViewModels
     /// <param name="sender"></param>
     public void EliteBGSClick(object sender)
     {
-      WebRequest webRequest = WebRequest.Create(string.Format("https://elitebgs.app/api/ebgs/v4/systems?name={0}",
+      WebRequest webRequest = WebRequest.Create(string.Format("https://elitebgs.app/api/ebgs/v5/systems?name={0}",
         GetSystemName(sender).Replace("+", "%2B")));
       WebResponse webResp = webRequest.GetResponse();
 
