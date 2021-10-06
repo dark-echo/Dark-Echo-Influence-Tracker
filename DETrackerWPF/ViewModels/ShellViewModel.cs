@@ -54,7 +54,7 @@ namespace DETrackerWPF.ViewModels
 
       // Now Check for update
       //AutoUpdater.ReportErrors = true;
-      AutoUpdater.Start("http://bots.darkecho.org/update/DETracker/DETracker.xml");
+      AutoUpdater.Start("http://158.69.223.156/update/DETracker/DETracker.xml");
 
       // Convert the .png images to something we can use in the grid
       UpTriangle = helper.Convert(DETrackerWPF.Properties.Resources.UpTriangle);
@@ -309,7 +309,7 @@ namespace DETrackerWPF.ViewModels
       var dict = JsonConvert.DeserializeObject<Dictionary<string, object>>(responseFromServer);
       var retDocs = JsonConvert.DeserializeObject<dynamic>(dict["docs"].ToString());
       string sysAddr = retDocs[0]._id.ToString();
-      System.Diagnostics.Process.Start(string.Format("https://elitebgs.app/system/{0}", sysAddr));
+      System.Diagnostics.Process.Start(string.Format("https://elitebgs.app/systems/{0}", sysAddr));
     }
 
     /// <summary>

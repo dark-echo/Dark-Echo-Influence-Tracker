@@ -1236,6 +1236,7 @@ namespace DETrackerWPF
             DESystemsForDisplay DESystem = new DESystemsForDisplay
         {
             StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
+            // If StarSystem is null we cannot proceed, need to add code here to trap and display bad system
             SystemAddress = reader.GetInt64(1),
             FactionHistory =
                 (List<DESystemsHistory>) JsonConvert.DeserializeObject(reader.GetString(2),
@@ -1295,10 +1296,12 @@ namespace DETrackerWPF
       // Disable Encrypted Connection
       RemoteConnectionString = RemoteConnectionString.Replace("=true", "=false");
 
-      LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true);
-
+      LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true); 
       connectionString = RemoteConnectionString;
       //connectionString = LocalConnectionString;
+
+      // Frig as cant amend the darkecho.org DNS
+      connectionString = connectionString.Replace(@"bots.darkecho.org", @"tcp:158.69.223.156");
 
       // Start the dependency process
       SqlDependency.Start(connectionString);
