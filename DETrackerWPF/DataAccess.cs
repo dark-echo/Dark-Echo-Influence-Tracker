@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Configuration;
+using System.Net;
 using Caliburn.Micro;
 using DETrackerWPF.Models;
 
@@ -734,44 +735,46 @@ namespace DETrackerWPF
     public async Task<string> GetClosePlayerFactions(SystemOverviewModel _systemOverview,
         List<ClosePlayFactions> _closestPlayerFactions, List<ExpansionSystems> _expansionSystems, int Range)
     {
-        _closestPlayerFactions.Clear();
-        _expansionSystems.Clear();
-        ExpansionRange = Range;
+      _closestPlayerFactions.Clear();
+      _expansionSystems.Clear();
+      ExpansionRange = Range;
 
-        using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+      using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+      {
+        using (SqlCommand SqlCmd = new SqlCommand("GetPlayerFactions", sqlConnection))
         {
-            using (SqlCommand SqlCmd = new SqlCommand("GetPlayerFactions", sqlConnection))
+          SqlCmd.CommandType = CommandType.StoredProcedure;
+
+          await sqlConnection.OpenAsync();
+          using (SqlDataReader reader = await SqlCmd.ExecuteReaderAsync())
+          {
+            while (reader.Read())
             {
-                SqlCmd.CommandType = CommandType.StoredProcedure;
+              var pf = MapClosePlayFactions(reader);
+              if (pf.SystemName == Helper.FactionName)
+                continue;
 
-                await sqlConnection.OpenAsync();
-                using (SqlDataReader reader = await SqlCmd.ExecuteReaderAsync())
-                {
-                    while (reader.Read())
-                    {
-                        var pf = MapClosePlayFactions(reader);
-                        if (pf.SystemName == Helper.FactionName)
-                            continue;
-
-                        var distance = getDistance.Distance3D(_systemOverview.StarPos[0], _systemOverview.StarPos[1],
-                            _systemOverview.StarPos[2], pf.StarPos[0], pf.StarPos[1], pf.StarPos[2]);
-                        if (distance < 30)
-                        {
-                            pf.Distance = distance;
-                            _closestPlayerFactions.Add(pf);
-                        }
-                    }
-
-                    reader.Close();
-                }
-
-                sqlConnection.Close();
+              var distance = getDistance.Distance3D(_systemOverview.StarPos[0], _systemOverview.StarPos[1],
+                  _systemOverview.StarPos[2], pf.StarPos[0], pf.StarPos[1], pf.StarPos[2]);
+              if (distance < 30)
+              {
+                pf.Distance = distance;
+                _closestPlayerFactions.Add(pf);
+              }
             }
-        }
 
-        GetExpansionTargets(_systemOverview, _closestPlayerFactions, _expansionSystems);
-        return "Complete";
+            reader.Close();
+          }
+
+          sqlConnection.Close();
+        }
+      }
+
+      GetExpansionTargets(_systemOverview, _closestPlayerFactions, _expansionSystems);
+      return "Complete";
     }
+
+
     /// <summary>
     /// 
     /// </summary>
@@ -779,6 +782,7 @@ namespace DETrackerWPF
     /// <returns></returns>
     private ClosePlayFactions MapClosePlayFactions(SqlDataReader reader)
     {
+
       ClosePlayFactions cpf = new ClosePlayFactions
       {
         StarPos = new List<double> {reader.GetDouble(1), reader.GetDouble(2), reader.GetDouble(3)},
@@ -1238,9 +1242,7 @@ namespace DETrackerWPF
             StarSystem = reader.IsDBNull(0) ? string.Empty : reader.GetString(0),
             // If StarSystem is null we cannot proceed, need to add code here to trap and display bad system
             SystemAddress = reader.GetInt64(1),
-            FactionHistory =
-                (List<DESystemsHistory>) JsonConvert.DeserializeObject(reader.GetString(2),
-                    typeof(List<DESystemsHistory>)),
+            FactionHistory = (List<DESystemsHistory>)JsonConvert.DeserializeObject(reader.GetString(2), typeof(List<DESystemsHistory>)), 
             StarPos = (List<double>) JsonConvert.DeserializeObject(reader.GetString(3), typeof(List<double>)),
             Visted = reader.GetInt32(4),
             timestamp = reader.GetDateTime(5),
@@ -1297,8 +1299,10 @@ namespace DETrackerWPF
       RemoteConnectionString = RemoteConnectionString.Replace("=true", "=false");
 
       LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true); 
-      connectionString = RemoteConnectionString;
-      //connectionString = LocalConnectionString;
+
+      // ** Swap between dev or live DB     
+      //connectionString = RemoteConnectionString;
+      connectionString = LocalConnectionString;
 
       // Frig as cant amend the darkecho.org DNS
       connectionString = connectionString.Replace(@"bots.darkecho.org", @"tcp:158.69.223.156");
