@@ -9,6 +9,7 @@ using Caliburn.Micro;
 using DETrackerWPF.Models;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 
 namespace DETrackerWPF.ViewModels
@@ -45,10 +46,22 @@ namespace DETrackerWPF.ViewModels
         SelectedSystemIndex = DarkEchoSystems.IndexOf(SystemToDisplay);
 
       PlotModel = new PlotModel { Title = "Faction Performance" };
-      PlotModel.LegendPlacement = LegendPlacement.Outside;
-      PlotModel.LegendPosition = LegendPosition.RightTop;
-      PlotModel.LegendBackground = OxyColor.FromAColor(200, OxyColors.White);
-      PlotModel.LegendBorder = OxyColors.Black;
+
+      var l = new Legend
+      {
+        LegendPlacement = LegendPlacement.Outside,
+        LegendPosition = LegendPosition.RightTop,
+        LegendBackground = OxyColor.FromAColor(200, OxyColors.White),
+        LegendBorder = OxyColors.Black,
+    };
+      
+      PlotModel.Legends.Add(l);
+
+      //PlotModel.LegendPlacement = LegendPlacement.Outside;
+      //PlotModel.LegendPosition = LegendPosition.RightTop;
+      //PlotModel.LegendBackground = OxyColor.FromAColor(200, OxyColors.White);
+      //PlotModel.LegendBorder = OxyColors.Black;
+
       PlotModel.TitleHorizontalAlignment = TitleHorizontalAlignment.CenteredWithinView;
       PlotModel.TitleFontSize = 24;
       PlotModel.TitlePadding = 20;

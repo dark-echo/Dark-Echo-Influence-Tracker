@@ -46,18 +46,21 @@ Source: "..\bin\Release\DETrackerWPF.exe.config"; DestDir: "{app}"; DestName: "D
 Source: "..\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Newtonsoft.Json.xml"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "..\bin\Release\Caliburn.Micro.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Caliburn.Micro.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Caliburn.Micro.Core.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Caliburn.Micro.Platform.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Caliburn.Micro.Platform.Core.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Caliburn.Micro.Platform.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Caliburn.Micro.Platform.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\Release\Caliburn.Micro.xml"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\bin\Release\System.Windows.Interactivity.dll"; DestDir: "{app}"; Flags: ignoreversion
+;Source: "..\bin\Release\System.Windows.Interactivity.dll"; DestDir: "{app}"; Flags: ignoreversion
 
 Source: "..\bin\Release\OxyPlot.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\OxyPlot.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\OxyPlot.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\OxyPlot.Wpf.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\OxyPlot.Wpf.Shared.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\OxyPlot.Wpf.Shared.xml"; DestDir: "{app}"; Flags: ignoreversion
+
 
 Source: "..\bin\Release\MahApps.Metro.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\MahApps.Metro.xml"; DestDir: "{app}"; Flags: ignoreversion
@@ -66,7 +69,14 @@ Source: "..\bin\Release\ControlzEx.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\AutoUpdater.NET.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\AutoUpdater.NET.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-
+Source: "..\bin\Release\Microsoft.Web.WebView2.Core.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Web.WebView2.Core.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Web.WebView2.WinForms.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Web.WebView2.WinForms.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Web.WebView2.Wpf.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Web.WebView2.Wpf.xml"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\bin\Release\Microsoft.Xaml.Behaviors.xml"; DestDir: "{app}"; Flags: ignoreversion
 
 
 ;Source: "..\bin\Release\AutoUpdater.NET.dll"; DestDir: "{app}"; Flags: ignoreversion

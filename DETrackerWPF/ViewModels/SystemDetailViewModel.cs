@@ -19,6 +19,7 @@ using DETrackerWPF.Models;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Axes;
+using OxyPlot.Legends;
 using OxyPlot.Series;
 using FontWeights = OxyPlot.FontWeights;
 
@@ -46,22 +47,37 @@ namespace DETrackerWPF.ViewModels
 
       // Set up line graph
       PlotModel = new PlotModel();
-      PlotModel.LegendPlacement = LegendPlacement.Outside;
-      PlotModel.LegendPosition = LegendPosition.BottomCenter;
-      PlotModel.LegendOrientation = LegendOrientation.Horizontal;
-      PlotModel.LegendBackground = OxyColor.FromAColor(200, OxyColors.White);
-      PlotModel.LegendBorder = OxyColors.Black;
+
+      var l = new Legend
+      {
+        LegendPlacement = LegendPlacement.Outside,
+        LegendPosition = LegendPosition.BottomCenter,
+        LegendOrientation = LegendOrientation.Horizontal,
+        LegendBackground = OxyColor.FromAColor(200, OxyColors.White),
+        LegendBorder = OxyColors.Black,
+
+      };
+
+      PlotModel.Legends.Add(l);
+
+
+      //PlotModel.LegendPlacement = LegendPlacement.Outside;
+      //PlotModel.LegendPosition = LegendPosition.BottomCenter;
+      //PlotModel.LegendOrientation = LegendOrientation.Horizontal;
+      //PlotModel.LegendBackground = OxyColor.FromAColor(200, OxyColors.White);
+      //PlotModel.LegendBorder = OxyColors.Black;
 
       // Setup system influence Pie Chart
       FactionPlot = new PlotModel();
       FactionPlot.Title = "System Influence";
-      FactionPlot.TitleColor =  OxyColors.Cornsilk;
+      FactionPlot.TitleColor = OxyColors.Cornsilk;
       FactionPlot.TitleFontSize = 24;
-      FactionPlot.PlotMargins = new OxyThickness(25,25,25,25);
+      FactionPlot.PlotMargins = new OxyThickness(25, 25, 25, 25);
 
       var SelectSystem = deSystemsForDisplay[deSystemsForDisplay.FindIndex(x => x.StarSystem == sysName)];
       var CurrentFactionHistory = SelectSystem.FactionHistory.Last();
-      var deInf = CurrentFactionHistory.Factions[CurrentFactionHistory.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100;
+      var deInf = CurrentFactionHistory
+        .Factions[CurrentFactionHistory.Factions.FindIndex(x => x.Name == Helper.FactionName)].Influence * 100;
 
       SystemOverview = new SystemOverviewModel();
       _displayDESystems = deSystemsForDisplay;
@@ -70,11 +86,15 @@ namespace DETrackerWPF.ViewModels
 
       SystemOverview = dataAccess.GetSystemInfo(sysName);
 
-      InfluenceDisplay = string.Format("Current Influence : {0:##.##}% / Max Influence Possible : {1:##.##}%", deInf, Helper.MaxInfluence(deInf, SystemOverview.Population));
+      InfluenceDisplay = string.Format("Current Influence : {0:##.##}% / Max Influence Possible : {1:##.##}%", deInf,
+        Helper.MaxInfluence(deInf, SystemOverview.Population));
 
       SystemEconomy = string.Format("{0} ({1})", SystemOverview.EconomyPrimary, SystemOverview.EconomySecondary);
-      OrbitalStations = new ObservableCollection<StationList>(SystemOverview.StationsInSystem.Where(x => x.IsPlantery == false).ToList());
-      PlanetaryStations = new ObservableCollection<StationList>(SystemOverview.StationsInSystem.Where(x => x.IsPlantery).ToList());
+      OrbitalStations =
+        new ObservableCollection<StationList>(
+          SystemOverview.StationsInSystem.Where(x => x.IsPlantery == false).ToList());
+      PlanetaryStations =
+        new ObservableCollection<StationList>(SystemOverview.StationsInSystem.Where(x => x.IsPlantery).ToList());
 
       DisplayDarkEchoSystem();
       FactionPieChart();
@@ -83,7 +103,9 @@ namespace DETrackerWPF.ViewModels
       PMFStatus = "Loading Closest PMFs and Expansion Systems";
       ExpansionRange = 20;
       ExpansionRangeText = "Expansion Targets (20ly Cube)";
-      Task task = Task.Run(async () => await dataAccess.GetClosePlayerFactions(SystemOverview, _closePlayerFactions, _expansionSystems, ExpansionRange));
+      Task task = Task.Run(async () =>
+        await dataAccess.GetClosePlayerFactions(SystemOverview, _closePlayerFactions, _expansionSystems,
+          ExpansionRange));
       task.ContinueWith(DataRetrived);
     }
 
@@ -196,6 +218,7 @@ namespace DETrackerWPF.ViewModels
 
         PlotModel.Series.Add(ls);
         index++;
+        if (index > 10) index--;
       }
 
       AddAxis();

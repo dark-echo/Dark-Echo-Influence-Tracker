@@ -333,7 +333,7 @@ namespace DETrackerWPF.ViewModels
     public void AnalyticsButton()
     {
       WindowManager windowManager = new WindowManager();
-      windowManager.ShowWindow(new OxyPlotChartViewModel(_displayDESystems, ActiveStarSystem), null, null);
+      windowManager.ShowWindowAsync(new OxyPlotChartViewModel(_displayDESystems, ActiveStarSystem), null, null);
     }
     /// <summary>
     /// Pull up the systems Overview screen
@@ -341,7 +341,7 @@ namespace DETrackerWPF.ViewModels
     public void InfoButton()
     {
       WindowManager windowManager = new WindowManager();
-      windowManager.ShowWindow(new SystemDetailViewModel(_displayDESystems, ActiveStarSystem), null, null);
+      windowManager.ShowWindowAsync(new SystemDetailViewModel(_displayDESystems, ActiveStarSystem), null, null);
     }
     // -----------------------------------------------------------------------------------------------------------------
     // --------------------------------------------       Properties     -----------------------------------------------

@@ -242,7 +242,8 @@ namespace DETrackerWPF.ViewModels
     /// </summary>
     public void Analytics()
     {
-      _windowManager.ShowWindow(new OxyPlotChartViewModel(displayDESystems, ""), null, null);
+      _windowManager.ShowWindowAsync(new OxyPlotChartViewModel(displayDESystems, ""), null, null);
+
     }
 
     /// <summary>
@@ -255,7 +256,7 @@ namespace DETrackerWPF.ViewModels
         displayDESystems[
             displayDESystems.IndexOf(displayDESystems.Find(x => x.StarSystem == SelectedSystem.StarSystemName))]
           .SystemAddress;
-      _windowManager.ShowWindow(new SystemHistoryViewModel(SystemAddress, displayDESystems), null, null);
+      _windowManager.ShowWindowAsync(new SystemHistoryViewModel(SystemAddress, displayDESystems), null, null);
 
     }
 
@@ -266,7 +267,7 @@ namespace DETrackerWPF.ViewModels
     public void SystemOverviewClick(object sender)
     {
       WindowManager windowManager = new WindowManager();
-      windowManager.ShowWindow(new SystemDetailViewModel(displayDESystems, GetSystemName(sender)), null, null);
+      windowManager.ShowWindowAsync(new SystemDetailViewModel(displayDESystems, GetSystemName(sender)), null, null);
     }
 
     /// <summary>
@@ -276,7 +277,7 @@ namespace DETrackerWPF.ViewModels
     public void SystemHistoryClick(object sender)
     {
       WindowManager windowManager = new WindowManager();
-      windowManager.ShowWindow(new SystemHistoryViewModel(GetSystemAddress(sender), displayDESystems), null, null);
+      windowManager.ShowWindowAsync(new SystemHistoryViewModel(GetSystemAddress(sender), displayDESystems), null, null);
     }
 
     /// <summary>
@@ -338,7 +339,7 @@ namespace DETrackerWPF.ViewModels
     public void SystemInfo(DarkEchoSystemsModel SelectedSystem)
     {
       WindowManager windowManager = new WindowManager();
-      windowManager.ShowWindow(new SystemDetailViewModel(displayDESystems, SelectedSystem.StarSystemName), null, null);
+      windowManager.ShowWindowAsync(new SystemDetailViewModel(displayDESystems, SelectedSystem.StarSystemName), null, null);
     }
 
     public void CheckChanged(object CheckedState)

@@ -1301,8 +1301,8 @@ namespace DETrackerWPF
       LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true); 
 
       // ** Swap between dev or live DB     
-      //connectionString = RemoteConnectionString;
-      connectionString = LocalConnectionString;
+      connectionString = RemoteConnectionString;
+      //connectionString = LocalConnectionString;
 
       // Frig as cant amend the darkecho.org DNS
       connectionString = connectionString.Replace(@"bots.darkecho.org", @"tcp:158.69.223.156");
