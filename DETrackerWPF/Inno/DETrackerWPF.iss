@@ -40,7 +40,14 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked; OnlyBelowVersion: 0,6.1
 
 
+
+
 [Files]
+
+Source: "..\bin\Release\de\*"; DestDir: "{app}\de"; Flags: ignoreversion recursesubdirs
+Source: "..\bin\Release\DETrackerWPF.exe.WebView2\*"; DestDir: "{app}\DETrackerWPF.exe.WebView2"; Flags: ignoreversion recursesubdirs
+Source: "..\bin\Release\runtimes\*"; DestDir: "{app}\runtimes"; Flags: ignoreversion recursesubdirs
+
 Source: "..\bin\Release\DETrackerWPF.exe"; DestDir: "{app}"; DestName: "DETracker.exe"; Flags: ignoreversion
 Source: "..\bin\Release\DETrackerWPF.exe.config"; DestDir: "{app}"; DestName: "DETracker.exe.config"; Flags: ignoreversion 
 Source: "..\bin\Release\Newtonsoft.Json.dll"; DestDir: "{app}"; Flags: ignoreversion
@@ -78,9 +85,6 @@ Source: "..\bin\Release\Microsoft.Web.WebView2.Wpf.xml"; DestDir: "{app}"; Flags
 Source: "..\bin\Release\Microsoft.Xaml.Behaviors.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\bin\Release\Microsoft.Xaml.Behaviors.xml"; DestDir: "{app}"; Flags: ignoreversion
 
-
-;Source: "..\bin\Release\AutoUpdater.NET.dll"; DestDir: "{app}"; Flags: ignoreversion
-;Source: "..\bin\Release\AutoUpdater.NET.xml"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\..\Key.txt"; Flags: dontcopy noencryption deleteafterinstall 
 
 

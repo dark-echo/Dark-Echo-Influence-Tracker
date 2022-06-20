@@ -8,7 +8,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using System.Configuration;
+using System.Diagnostics;
 using System.Net;
+using System.Windows;
 using Caliburn.Micro;
 using DETrackerWPF.Models;
 
@@ -44,42 +46,42 @@ namespace DETrackerWPF
 
       // Tick Not Happened so we just display data for the previous tick.
       foreach (var sd in displayDESystems)
-        {
-          if (sd.SysFaction.Name != Helper.FactionName)
-            continue;
+      {
+        if (sd.SysFaction.Name != Helper.FactionName)
+          continue;
 
-          deSysCount++;
-          // Have we got any history records, catch for when moved into new System
+        deSysCount++;
+        // Have we got any history records, catch for when moved into new System
         if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date) >= 0)
-            {
-                DESystemsHistory histRec =
-                    sd.FactionHistory[
-                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
-                dayMinus1Inf = dayMinus1Inf +
-                               (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
-                                   .Influence * 100);
+        {
+          DESystemsHistory histRec =
+            sd.FactionHistory[
+              sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-1).Date)];
+          dayMinus1Inf = dayMinus1Inf +
+                         (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                           .Influence * 100);
 
-                // Have we 2 days history?
-                if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date) >= 0)
-                {
-                    histRec = sd.FactionHistory[
-                        sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date)];
-                    dayMinus2Inf = dayMinus2Inf +
-                                   (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
-                                       .Influence * 100);
-                }
-            }
-            else
-            {
-                DESystemsHistory histRec =
-                    sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
-                dayMinus1Inf = dayMinus1Inf +
-                               (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
-                                   .Influence * 100);
-            }
+          // Have we 2 days history?
+          if (sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date) >= 0)
+          {
+            histRec = sd.FactionHistory[
+              sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.AddDays(-2).Date)];
+            dayMinus2Inf = dayMinus2Inf +
+                           (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                             .Influence * 100);
+          }
         }
+        else
+        {
+          DESystemsHistory histRec =
+            sd.FactionHistory[sd.FactionHistory.FindIndex(x => x.timestamp.Date == DateTime.UtcNow.Date)];
+          dayMinus1Inf = dayMinus1Inf +
+                         (histRec.Factions[histRec.Factions.FindIndex(x => x.Name == Helper.FactionName)]
+                           .Influence * 100);
+        }
+      }
 
-        // Calculate Average and Influence change for today
+      // Calculate Average and Influence change for today
         //var avgInfForDayMinus1 = dayMinus1Inf / displayDESystems.Count;
         var avgInfForDayMinus1 = dayMinus1Inf / deSysCount;
         var infChange = dayMinus1Inf - dayMinus2Inf;
@@ -479,6 +481,9 @@ namespace DETrackerWPF
     /// <returns></returns>
     public List<DESystemsForDisplay> ReadDeSystemsTable()
     {
+      var timer = new Stopwatch();
+      timer.Start();
+
       displayDESystems = new List<DESystemsForDisplay>();
       using (SqlConnection sqlConnection = new SqlConnection(connectionString))
       {
@@ -502,6 +507,14 @@ namespace DETrackerWPF
       }
 
       GetDailyVisits();
+
+      timer.Stop();
+      TimeSpan timeTaken = timer.Elapsed;
+      string foo = "Time taken: " + timeTaken.ToString(@"m\:ss\.fff");
+
+      Console.WriteLine(foo);
+
+
       return displayDESystems;
     }
 
@@ -531,6 +544,41 @@ namespace DETrackerWPF
           sqlConnection.Close();
         }
       }
+    }
+
+    /// <summary>
+    ///  Get a list of systems that have not been update since configured tick time and copy to clipboard
+    /// </summary>
+    public int GetJumpList()
+    {
+      List<string> jumpList  = new List<string>();
+
+      using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+      {
+        using (SqlCommand sqlCmd = new SqlCommand("GetNonTickedSystems", sqlConnection))
+        {
+          sqlCmd.CommandType = CommandType.StoredProcedure;
+          sqlCmd.Parameters.AddWithValue("@hr", TickTimeHour);
+          sqlCmd.Parameters.AddWithValue("@min",TickTimeMin);
+
+          sqlConnection.Open();
+          using (sqlCmd)
+          {
+            using (SqlDataReader reader = sqlCmd.ExecuteReader())
+            {
+              while (reader.Read())
+              {
+                jumpList.Add(reader.GetString(0));
+              }
+            }
+          }
+
+          sqlConnection.Close();
+        }
+      }
+      // Copy systems to clipboard
+      Clipboard.SetText(string.Join(Environment.NewLine, jumpList.Cast<object>().Select(o => o.ToString()).ToArray()));
+      return jumpList.Count;
     }
 
     /// <summary>
@@ -1298,7 +1346,7 @@ namespace DETrackerWPF
       // Disable Encrypted Connection
       RemoteConnectionString = RemoteConnectionString.Replace("=true", "=false");
 
-      LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true); 
+      LocalConnectionString = CryptorEngine.Decrypt(connections[2].ConnectionString, true);
 
       // ** Swap between dev or live DB     
       connectionString = RemoteConnectionString;

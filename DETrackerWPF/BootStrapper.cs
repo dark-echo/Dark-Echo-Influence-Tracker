@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,6 +15,9 @@ namespace DETrackerWPF
 {
   public class Bootstrapper : BootstrapperBase
   {
+
+ 
+
     public Bootstrapper()
     {
       Initialize();
@@ -24,6 +28,7 @@ namespace DETrackerWPF
       DisplayRootViewFor<ShellViewModel>();
     }
 
+
     // Window Open Code
     // http://www.mindscapehq.com/blog/index.php/2012/03/13/caliburn-micro-part-5-the-window-manager/
 
@@ -31,7 +36,8 @@ namespace DETrackerWPF
 
     protected override void Configure()
     {
-      container = new CompositionContainer(new AggregateCatalog(AssemblySource.Instance.Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()));
+      container = new CompositionContainer(new AggregateCatalog(AssemblySource.Instance
+        .Select(x => new AssemblyCatalog(x)).OfType<ComposablePartCatalog>()));
 
       CompositionBatch batch = new CompositionBatch();
 
@@ -39,7 +45,9 @@ namespace DETrackerWPF
       batch.AddExportedValue<IEventAggregator>(new EventAggregator());
       batch.AddExportedValue(container);
 
+
       container.Compose(batch);
+
     }
 
     protected override object GetInstance(Type serviceType, string key)
@@ -54,6 +62,8 @@ namespace DETrackerWPF
 
       throw new Exception(string.Format("Could not locate any instances of contract {0}.", contract));
     }
+
+
 
   }
 }

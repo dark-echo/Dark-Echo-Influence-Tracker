@@ -26,11 +26,12 @@ using Newtonsoft.Json;
 
 namespace DETrackerWPF.ViewModels
 {
-
-
+  
   [Export(typeof(ShellViewModel))]
   public class ShellViewModel : Screen
   {
+
+
 
     DataAccess dataAccess = new DataAccess();
 
@@ -54,6 +55,7 @@ namespace DETrackerWPF.ViewModels
 
       // Now Check for update
       //AutoUpdater.ReportErrors = true;
+      //AutoUpdater.RunUpdateAsAdmin = true;
       AutoUpdater.Start("http://158.69.223.156/update/DETracker/DETracker.xml");
 
       // Convert the .png images to something we can use in the grid
@@ -77,8 +79,11 @@ namespace DETrackerWPF.ViewModels
       System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
       FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
       string version = fvi.FileVersion;
-      WindowTitle = string.Format("Dark Echo Influence Tracker v{0} (Built {1})", version, 
-      DETrackerWPF.Properties.Resources.BuildDate);
+      WindowTitle = string.Format("Dark Echo Influence Tracker v{0} (Built {1})", version,
+        DETrackerWPF.Properties.Resources.BuildDate);
+
+
+      //windowManager.ShowDialogAsync(new SplashScreenViewModel());
 
       // Get DE systems, size main screen to suit
       displayDESystems = dataAccess.ReadDeSystemsTable();
@@ -146,6 +151,8 @@ namespace DETrackerWPF.ViewModels
       dataAccess.SystemUpdated = false;
       UpdateTimer.Start();
     }
+
+
 
     /// <summary>
     /// Grab all systems that we control or have a presence in and build the Datagrid line 
@@ -244,6 +251,14 @@ namespace DETrackerWPF.ViewModels
     {
       _windowManager.ShowWindowAsync(new OxyPlotChartViewModel(displayDESystems, ""), null, null);
 
+    }
+
+    public void JumpList()
+    {
+      WindowManager windowManager = new WindowManager();
+
+      //dataAccess.GetJumpList();
+      _windowManager.ShowWindowAsync(new PopUpMessageViewModel(dataAccess.GetJumpList()));
     }
 
     /// <summary>

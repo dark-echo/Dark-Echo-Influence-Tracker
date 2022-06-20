@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-    <version>1.4.0.0</version>
+    <version>1.4.0.2</version>
     <url>http://158.69.223.156/update/DETracker/DETrackerSetup.exe</url>
     <changelog>http://158.69.223.156/update/DETracker/ReleaseNotes.html</changelog>
     <mandatory>true</mandatory>
