@@ -255,7 +255,7 @@
       <Version>4.0.173</Version>
     </PackageReference>
     <PackageReference Include="ControlzEx">
-      <Version>5.0.1</Version>
+      <Version>5.0.2</Version>
     </PackageReference>
     <PackageReference Include="MahApps.Metro">
       <Version>2.4.9</Version>
