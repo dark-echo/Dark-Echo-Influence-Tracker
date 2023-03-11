@@ -276,7 +276,7 @@
       <Version>13.0.1</Version>
     </PackageReference>
     <PackageReference Include="OxyPlot.Wpf">
-      <Version>2.1.0</Version>
+      <Version>2.1.2</Version>
     </PackageReference>
     <PackageReference Include="System.ValueTuple">
       <Version>4.5.0</Version>
