@@ -273,7 +273,7 @@
       <Version>1.0.9</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json">
-      <Version>13.0.1</Version>
+      <Version>13.0.3</Version>
     </PackageReference>
     <PackageReference Include="OxyPlot.Wpf">
       <Version>2.1.0</Version>
